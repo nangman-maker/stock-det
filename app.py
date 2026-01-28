@@ -41,17 +41,22 @@ def get_stock_name(ticker):
     # 1. KRX (주식) 확인
     try:
         df_krx = fdr.StockListing('KRX')
-        chk = df_krx[df_krx['Code'] == ticker]
+        
+        # 컬럼 이름이 Code인지 Symbol인지 확인
+        col_name = 'Symbol' if 'Symbol' in df_krx.columns else 'Code'
+        
+        chk = df_krx[df_krx[col_name] == ticker]
         if not chk.empty:
             return chk['Name'].values[0]
-    except:
-        pass # 에러나면 다음으로 넘어감
+    except Exception as e:
+        print(f"KRX 목록 조회 실패: {e}") # 로그에 에러 원인 출력
+        pass
 
-    # 2. ETF/KR 확인 (여기가 문제였음: Code -> Symbol로 변경)
+    # 2. ETF/KR 확인
     try:
         df_etf = fdr.StockListing('ETF/KR')
-        # ETF는 컬럼명이 'Symbol'일 수 있음
         col_name = 'Symbol' if 'Symbol' in df_etf.columns else 'Code'
+        
         chk = df_etf[df_etf[col_name] == ticker]
         if not chk.empty:
             return chk['Name'].values[0]
